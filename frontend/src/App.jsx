@@ -1,33 +1,51 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Dashboard from './components/Dashboard.jsx';
+import AddAuditForm from './components/AddAuditForm.jsx';
+import Navbar from './components/NavBar.jsx';
 import './App.css'
+import CriteriaList from './components/CriteriaList';
+import CriteriaForm from './components/CriteriaForm';
+import EvaluationForm from './components/EvaluationForm.jsx';
+import FacilityList from './components/FacilityList';
+import FacilityForm from './components/FacilityForm';
+import PatientList from './components/PatientList'; 
+import PatientForm from './components/PatientForm'; 
+import AssessmentsList from './components/AssessmentList';
+import AssessmentForm from './components/AssessmentForm';
+// import AuditList from './components/AuditList';
+// import AuditForm from './components/AuditForm';
+// import EvaluationSummary from './components/EvaluationSummary.jsx';
+
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+    <Router>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/audits" element={<AddAuditForm />} />
+        <Route path="/facilities/:facilityId/evaluate" element={<EvaluationForm />} />
+        <Route path="/criteria" element={<CriteriaList />} />
+        <Route path="/criteria/add" element={<CriteriaForm />} />
+        <Route path="/criteria/edit/:id" element={<CriteriaForm />} />
+        <Route path="/facilities" element={<FacilityList />} />
+        <Route path="/facilities/add" element={<FacilityForm />} />
+        <Route path="/facilities/edit/:id" element={<FacilityForm />} />
+        <Route path="/patients" element={<PatientList />} />
+        <Route path="/patients/add" element={<PatientForm />} />
+        <Route path="/patients/edit/:id" element={<PatientForm />} /> 
+        <Route path="/assessments" element={<AssessmentsList />} />
+        <Route path="/assessments/add" element={<AssessmentForm />} />
+        <Route path="/assessments/edit/:id" element={<AssessmentForm />} />
+        {/* <Route path="/audits" element={<AuditList />} />
+        <Route path="/audits/add" element={<AuditForm />} />
+        <Route path="/audits/edit/:id" element={<AuditForm />} /> */}
+        <Route path="/evaluations" element={<EvaluationForm />} />
+
+
+      </Routes>
+    </Router>
     </>
   )
 }
