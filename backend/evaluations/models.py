@@ -54,11 +54,16 @@ class Criteria(models.Model):
         ('ISO 9001', 'ISO 9001'),
         ('Custom', 'Custom'),
     ]
+    TYPE_CHOICES = [
+        ('core', 'Core'),
+        ('optional', 'Optional'),
+    ]
 
     name = models.CharField(max_length=200)  # e.g., "Accessibility"
     description = models.TextField()
-    weight = models.FloatField(default=1.0)  # Weight for scoring
+    weight = models.FloatField(default=1.0)
     standard = models.CharField(max_length=100, choices=STANDARD_CHOICES, default='WHO-AIMS 2.0')
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES, default='core')
 
     def clean(self):
         # Ensure the sum of all criteria weights equals 100%
@@ -79,10 +84,20 @@ class Indicator(models.Model):
         return f"{self.name} (Criteria: {self.criteria.name})"
 
 
+class EvaluationTemplate(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField()
+    criteria_weights = models.JSONField()  # Store weights for each criterion
+
+    def __str__(self):
+        return self.name
+
+
 class Evaluation(models.Model):
     facility = models.ForeignKey(Facility, on_delete=models.CASCADE)
     auditor = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
+    template = models.ForeignKey(EvaluationTemplate, on_delete=models.SET_NULL, null=True, blank=True)
     criteria_scores = models.JSONField(default=dict)  # Store scores as JSON (criteria_id: score)
     total_score = models.FloatField(default=0)
 
@@ -91,7 +106,8 @@ class Evaluation(models.Model):
         for criteria_id, score in self.criteria_scores.items():
             try:
                 criteria = Criteria.objects.get(id=int(criteria_id))
-                total += score * criteria.weight
+                weight = self.template.criteria_weights.get(str(criteria_id), criteria.weight)
+                total += score * weight
             except Criteria.DoesNotExist:
                 raise ValidationError(f"Invalid Criteria ID: {criteria_id}")
             if not (0 <= score <= 100):
