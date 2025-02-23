@@ -1,16 +1,17 @@
-# populate_db.py
 import os
 import django
 import random
 from datetime import date, timedelta
 
+# Set up Django environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mhq.settings')
 django.setup()
 
+# Import models
 from evaluations.models import (
     Facility, Patient, Assessment, Audit, Criteria, Indicator, EvaluationTemplate, Evaluation
 )
-from django.contrib.auth.models import User
+from evaluations.models import User  # Use the custom User model
 
 # Clear all existing data
 def clear_data():
@@ -22,11 +23,33 @@ def clear_data():
     Indicator.objects.all().delete()
     EvaluationTemplate.objects.all().delete()
     Evaluation.objects.all().delete()
+    User.objects.exclude(is_superuser=True).delete()  # Keep superusers intact
 
 # Helper Functions
 def random_date(start, end):
     """Generate a random date between start and end."""
     return start + timedelta(days=random.randint(0, (end - start).days))
+
+# Populate Users
+def create_users():
+    users = []
+    roles = ['superuser', 'admin', 'auditor', 'clinician', 'viewer']
+    for i, role in enumerate(roles):
+        username = f"{role}{i+1}"
+        user = User.objects.create_user(
+            username=username,
+            email=f"{username}@example.com",
+            password="password123",  # Default password
+            role=role,
+            name=f"{role.capitalize()} User {i+1}",
+            phone=f"+25078{random.randint(100000, 999999)}"
+        )
+        if role == 'superuser':
+            user.is_superuser = True
+            user.is_staff = True
+            user.save()
+        users.append(user)
+    return users
 
 # Populate Facilities
 def create_facilities():
@@ -53,7 +76,6 @@ def create_facilities():
 def create_criteria_and_indicators():
     criteria_list = []
     indicator_list = []
-
     criteria_data = [
         {
             "name": "Accessibility",
@@ -83,7 +105,6 @@ def create_criteria_and_indicators():
             ]
         }
     ]
-
     for data in criteria_data:
         criterion = Criteria.objects.create(
             name=data["name"],
@@ -92,7 +113,6 @@ def create_criteria_and_indicators():
             weight=1.0  # Default weight
         )
         criteria_list.append(criterion)
-
         for indicator_data in data["indicators"]:
             indicator = Indicator.objects.create(
                 criteria=criterion,
@@ -100,10 +120,9 @@ def create_criteria_and_indicators():
                 weight=indicator_data["weight"]
             )
             indicator_list.append(indicator)
-
     return criteria_list, indicator_list
 
-# Populate Patients
+# Populate Patients, Assessments, Audits, etc.
 def create_patients(facilities):
     patients = []
     for facility in facilities:
@@ -118,7 +137,6 @@ def create_patients(facilities):
             patients.append(patient)
     return patients
 
-# Populate Assessments
 def create_assessments(patients):
     assessments = []
     for patient in patients:
@@ -132,7 +150,6 @@ def create_assessments(patients):
             assessments.append(assessment)
     return assessments
 
-# Populate Audits
 def create_audits(facilities):
     audits = []
     for facility in facilities:
@@ -146,7 +163,7 @@ def create_audits(facilities):
             audits.append(audit)
     return audits
 
-# Populate Evaluation Templates
+# Populate Evaluation Templates and Evaluations
 def create_evaluation_templates(criteria):
     templates = []
     template_data = [
@@ -170,18 +187,17 @@ def create_evaluation_templates(criteria):
         templates.append(template)
     return templates
 
-# Populate Evaluations
-def create_evaluations(facilities, templates, criteria):
+def create_evaluations(facilities, templates, criteria, users):
     evaluations = []
-    admin_user = User.objects.get(username='admin')  # Ensure admin user exists
     for facility in facilities:
         for template in templates:
+            auditor = random.choice(users)  # Randomly assign an auditor
             criteria_scores = {}
             for criterion_id in template.criteria_weights.keys():
                 criteria_scores[criterion_id] = random.randint(0, 100)
             evaluation = Evaluation.objects.create(
                 facility=facility,
-                auditor=admin_user,
+                auditor=auditor,
                 template=template,
                 criteria_scores=criteria_scores
             )
@@ -191,10 +207,13 @@ def create_evaluations(facilities, templates, criteria):
 # Main Execution
 if __name__ == "__main__":
     clear_data()
+    users = create_users()
     facilities = create_facilities()
     criteria, indicators = create_criteria_and_indicators()
     patients = create_patients(facilities)
     assessments = create_assessments(patients)
     audits = create_audits(facilities)
     templates = create_evaluation_templates(criteria)
-    evaluations = create_evaluations(facilities, templates, criteria)
+    evaluations = create_evaluations(facilities, templates, criteria, users)
+
+    print("Database populated successfully!")

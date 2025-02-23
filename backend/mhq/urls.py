@@ -30,8 +30,8 @@ router.register(r'audits', views.AuditViewSet)
 # Evaluation Framework routes
 router.register(r'criteria', views.CriteriaViewSet)
 router.register(r'evaluations', views.EvaluationViewSet)
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('api/evaluation-templates/', views.EvaluationTemplateListCreateView.as_view(), name='evaluation-template-list-create'),
 ]

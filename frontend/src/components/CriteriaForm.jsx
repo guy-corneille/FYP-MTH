@@ -1,8 +1,11 @@
 // frontend/src/components/CriteriaForm.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const CriteriaForm = () => {
+    const { id } = useParams(); // Get the criteria ID from the URL
+    const navigate = useNavigate();
     const [criteria, setCriteria] = useState({
         name: '',
         description: '',
@@ -10,6 +13,24 @@ const CriteriaForm = () => {
         weight: 1.0,
         indicators: [{ name: '', weight: 1.0 }],
     });
+
+    useEffect(() => {
+        if (id) {
+            // Fetch criteria data for editing
+            axios.get(`http://localhost:8000/api/criteria/${id}/`)
+                .then(res => {
+                    const { name, description, standard, weight, indicators } = res.data;
+                    setCriteria({
+                        name,
+                        description,
+                        standard,
+                        weight,
+                        indicators: indicators || [{ name: '', weight: 1.0 }],
+                    });
+                })
+                .catch(err => console.error('Error fetching criteria:', err));
+        }
+    }, [id]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -53,9 +74,11 @@ const CriteriaForm = () => {
         if (!validateForm()) return;
 
         try {
-            const response = await axios.post('http://localhost:8000/api/criteria/', criteria);
-            console.log("Criteria saved:", response.data);
+            const method = id ? axios.put : axios.post;
+            const url = id ? `http://localhost:8000/api/criteria/${id}/` : 'http://localhost:8000/api/criteria/';
+            await method(url, criteria);
             alert("Criteria saved successfully!");
+            navigate('/criteria');
         } catch (error) {
             console.error("Error saving criteria:", error);
             alert("Failed to save criteria. Please try again.");
@@ -64,7 +87,7 @@ const CriteriaForm = () => {
 
     return (
         <form onSubmit={handleSubmit}>
-            <h2>Add New Criteria</h2>
+            <h2>{id ? 'Edit Criteria' : 'Add New Criteria'}</h2>
 
             {/* Name */}
             <label>Name</label>
@@ -91,7 +114,6 @@ const CriteriaForm = () => {
                 name="standard"
                 value={criteria.standard}
                 onChange={handleInputChange}
-                required
             >
                 <option value="WHO-AIMS 2.0">WHO-AIMS 2.0</option>
                 <option value="ISO 9001">ISO 9001</option>
@@ -114,7 +136,7 @@ const CriteriaForm = () => {
             {/* Indicators */}
             <h3>Indicators</h3>
             {criteria.indicators.map((indicator, index) => (
-                <div key={index} style={{ marginBottom: '10px', border: '1px solid #ccc', padding: '10px' }}>
+                <div key={index}>
                     <label>Indicator Name</label>
                     <input
                         type="text"
@@ -122,7 +144,6 @@ const CriteriaForm = () => {
                         onChange={(e) => handleIndicatorChange(index, 'name', e.target.value)}
                         required
                     />
-
                     <label>Weight (0-100)</label>
                     <input
                         type="number"
@@ -133,7 +154,6 @@ const CriteriaForm = () => {
                         step="0.1"
                         required
                     />
-
                     <button
                         type="button"
                         onClick={() => handleRemoveIndicator(index)}
@@ -150,7 +170,7 @@ const CriteriaForm = () => {
             </button>
 
             {/* Submit Button */}
-            <button type="submit">Save Criteria</button>
+            <button type="submit">{id ? 'Save Changes' : 'Add Criteria'}</button>
         </form>
     );
 };

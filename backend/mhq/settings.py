@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
 ]
+AUTH_USER_MODEL = 'evaluations.User'
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',  
@@ -75,6 +76,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'mhq.wsgi.application'
 
