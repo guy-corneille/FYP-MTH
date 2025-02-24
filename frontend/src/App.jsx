@@ -6,11 +6,12 @@ import SideBar from './components/SideBar';
 import CriteriaList from './components/CriteriaList';
 import CriteriaForm from './components/CriteriaForm';
 import EvaluationForm from './components/EvaluationForm';
+import EvaluationSummary from './components/EvaluationSummary';
 import FacilityList from './components/FacilityList';
 import FacilityForm from './components/FacilityForm';
 import PatientList from './components/PatientList';
 import PatientForm from './components/PatientForm';
-import AssessmentsList from './components/AssessmentList';
+import AssessmentList from './components/AssessmentList';
 import AssessmentForm from './components/AssessmentForm';
 import EvaluationTemplateForm from './components/EvaluationTemplateForm';
 
@@ -22,7 +23,7 @@ function App() {
                 <div style={{ flex: 1, padding: '20px' }}>
                     <Routes>
                         {/* Dashboard */}
-                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/" element={<Dashboard />} />
 
                         {/* Criteria */}
                         <Route path="/criteria" element={<CriteriaList />} />
@@ -40,19 +41,20 @@ function App() {
                         <Route path="/patients/edit/:id" element={<PatientForm />} />
 
                         {/* Assessments */}
-                        <Route path="/assessments" element={<AssessmentsList />} />
+                        <Route path="/assessments" element={<AssessmentList />} />
                         <Route path="/assessments/add" element={<AssessmentForm />} />
                         <Route path="/assessments/edit/:id" element={<AssessmentForm />} />
 
                         {/* Evaluations */}
-                        <Route path="/evaluations" element={<EvaluationForm />} />
+                        <Route path="/evaluations" element={<EvaluationSummary />} />
                         <Route path="/evaluations/add" element={<EvaluationForm />} />
                         <Route path="/evaluations/edit/:id" element={<EvaluationForm />} />
 
                         {/* Evaluation Templates */}
-                        <Route path="/evaluation-templates" element={<EvaluationTemplateForm />} />
-                        <Route path="/evaluation-templates/add" element={<EvaluationTemplateForm />} />
-                        <Route path="/evaluation-templates/edit/:id" element={<EvaluationTemplateForm />} />
+                        <Route path="/templates" element={<EvaluationTemplateForm />} />
+
+                        {/* Fallback Route */}
+                        <Route path="*" element={<h1>404 Not Found</h1>} />
                     </Routes>
                 </div>
             </div>

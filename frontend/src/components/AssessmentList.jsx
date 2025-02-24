@@ -10,12 +10,22 @@ const AssessmentList = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Fetch assessments
         const assessmentsRes = await axios.get('http://localhost:8000/api/assessments/', {
-          params: { search: searchTerm }
+          params: { search: searchTerm },
         });
+
+        // Fetch patients
         const patientsRes = await axios.get('http://localhost:8000/api/patients/');
+
+        // Ensure patients is an array
+        const patientsData = Array.isArray(patientsRes.data)
+          ? patientsRes.data
+          : patientsRes.data.results || [];
+
+        // Update state
         setAssessments(assessmentsRes.data);
-        setPatients(patientsRes.data);
+        setPatients(patientsData);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -24,14 +34,14 @@ const AssessmentList = () => {
   }, [searchTerm]);
 
   const getPatientIdentifier = (patientId) => {
-    const patient = patients.find(p => p.id === patientId);
+    const patient = patients.find((p) => p.id === patientId);
     return patient ? patient.identifier : 'Unknown Patient';
   };
 
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:8000/api/assessments/${id}/`);
-      setAssessments(assessments.filter(a => a.id !== id));
+      setAssessments((prevAssessments) => prevAssessments.filter((a) => a.id !== id));
     } catch (error) {
       console.error('Delete failed:', error);
     }
@@ -46,7 +56,9 @@ const AssessmentList = () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <Link to="/assessments/add" className="add-button">New Assessment</Link>
+      <Link to="/assessments/add" className="add-button">
+        New Assessment
+      </Link>
       <table>
         <thead>
           <tr>
@@ -58,15 +70,19 @@ const AssessmentList = () => {
           </tr>
         </thead>
         <tbody>
-          {assessments.map(assessment => (
+          {assessments.map((assessment) => (
             <tr key={assessment.id}>
               <td>{getPatientIdentifier(assessment.patient)}</td>
               <td>{new Date(assessment.date).toLocaleDateString()}</td>
               <td>{assessment.score}</td>
               <td>{assessment.notes}</td>
               <td>
-                <Link to={`/assessments/edit/${assessment.id}`}>Edit</Link>
-                <button onClick={() => handleDelete(assessment.id)}>Delete</button>
+                <Link to={`/assessments/edit/${assessment.id}`} className="edit-link">
+                  Edit
+                </Link>
+                <button onClick={() => handleDelete(assessment.id)} className="delete-button">
+                  Delete
+                </button>
               </td>
             </tr>
           ))}

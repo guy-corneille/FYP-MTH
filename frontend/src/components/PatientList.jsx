@@ -1,4 +1,3 @@
-// frontend/src/components/PatientList.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -12,12 +11,27 @@ const PatientList = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Fetch patients
         const patientsRes = await axios.get('http://localhost:8000/api/patients/', {
-          params: { search: searchTerm }
+          params: { search: searchTerm },
         });
+
+        // Fetch facilities
         const facilitiesRes = await axios.get('http://localhost:8000/api/facilities/');
-        setPatients(patientsRes.data);
-        setFacilities(facilitiesRes.data);
+
+        // Ensure patients is an array
+        const patientsData = Array.isArray(patientsRes.data)
+          ? patientsRes.data
+          : patientsRes.data.results || [];
+
+        // Ensure facilities is an array
+        const facilitiesData = Array.isArray(facilitiesRes.data)
+          ? facilitiesRes.data
+          : facilitiesRes.data.results || [];
+
+        // Update state
+        setPatients(patientsData);
+        setFacilities(facilitiesData);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -28,7 +42,7 @@ const PatientList = () => {
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:8000/api/patients/${id}/`);
-      setPatients(patients.filter(patient => patient.id !== id));
+      setPatients((prevPatients) => prevPatients.filter((patient) => patient.id !== id));
     } catch (error) {
       console.error('Delete failed:', error);
     }
@@ -36,7 +50,7 @@ const PatientList = () => {
 
   // Get facility name by ID
   const getFacilityName = (facilityId) => {
-    const facility = facilities.find(f => f.id === facilityId);
+    const facility = facilities.find((f) => f.id === facilityId);
     return facility ? facility.name : 'Unknown Facility';
   };
 
@@ -47,9 +61,13 @@ const PatientList = () => {
         type="text"
         placeholder="Search patients..."
         value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+        }}
       />
-      <Link to="/patients/add" className="add-button">Add New Patient</Link>
+      <Link to="/patients/add" className="add-button">
+        Add New Patient
+      </Link>
       <table>
         <thead>
           <tr>
@@ -62,7 +80,7 @@ const PatientList = () => {
           </tr>
         </thead>
         <tbody>
-          {patients.map(patient => (
+          {patients.map((patient) => (
             <tr key={patient.id}>
               <td>{patient.identifier}</td>
               <td>{patient.age}</td>
@@ -70,8 +88,12 @@ const PatientList = () => {
               <td>{new Date(patient.admission_date).toLocaleDateString()}</td>
               <td>{getFacilityName(patient.facility)}</td>
               <td>
-                <Link to={`/patients/edit/${patient.id}`} className="edit-link">Edit</Link>
-                <button onClick={() => handleDelete(patient.id)} className="delete-button">Delete</button>
+                <Link to={`/patients/edit/${patient.id}`} className="edit-link">
+                  Edit
+                </Link>
+                <button onClick={() => handleDelete(patient.id)} className="delete-button">
+                  Delete
+                </button>
               </td>
             </tr>
           ))}

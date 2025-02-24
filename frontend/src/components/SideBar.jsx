@@ -11,6 +11,7 @@ const Sidebar = () => {
                 <li><Link to="/facilities">Facilities</Link></li>
                 <li><Link to="/criteria">Criteria</Link></li>
                 <li><Link to="/audits">Audits</Link></li>
+                <li><Link to="/patients">Patients</Link></li>
                 <li><Link to="/assessments">Assessments</Link></li>
                 <li><Link to="/evaluations">Evaluations</Link></li>
             </ul>

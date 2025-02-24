@@ -1,4 +1,3 @@
-// frontend/src/components/EvaluationSummary.jsx
 const EvaluationSummary = ({ facilityId }) => {
   const [evaluations, setEvaluations] = useState([]);
 
@@ -16,8 +15,8 @@ const EvaluationSummary = ({ facilityId }) => {
         </tr>
       </thead>
       <tbody>
-        {evaluations.map(eval => (
-          Object.entries(eval.criteria_scores).map(([criteriaId, score]) => (
+        {evaluations.map(evaluation => ( // Renamed 'eval' to 'evaluation'
+          Object.entries(evaluation.criteria_scores).map(([criteriaId, score]) => (
             <tr key={criteriaId}>
               <td>{criteriaId}</td>
               <td>{score}</td>
@@ -28,3 +27,4 @@ const EvaluationSummary = ({ facilityId }) => {
     </table>
   );
 };
+export default EvaluationSummary;
