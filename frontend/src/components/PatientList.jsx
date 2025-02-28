@@ -6,31 +6,32 @@ const PatientList = () => {
   const [patients, setPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [facilities, setFacilities] = useState([]);
+  const [nextPageUrl, setNextPageUrl] = useState(null); // URL for the next page
+  const [prevPageUrl, setPrevPageUrl] = useState(null); // URL for the previous page
 
   // Fetch patients and facilities
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch patients
         const patientsRes = await axios.get('http://localhost:8000/api/patients/', {
           params: { search: searchTerm },
         });
 
-        // Fetch facilities
-        const facilitiesRes = await axios.get('http://localhost:8000/api/facilities/');
-
         // Ensure patients is an array
-        const patientsData = Array.isArray(patientsRes.data)
-          ? patientsRes.data
-          : patientsRes.data.results || [];
-
-        // Ensure facilities is an array
-        const facilitiesData = Array.isArray(facilitiesRes.data)
-          ? facilitiesRes.data
-          : facilitiesRes.data.results || [];
+        const patientsData = Array.isArray(patientsRes.data.results)
+          ? patientsRes.data.results
+          : [];
 
         // Update state
         setPatients(patientsData);
+        setNextPageUrl(patientsRes.data.next || null);
+        setPrevPageUrl(patientsRes.data.previous || null);
+
+        // Fetch facilities
+        const facilitiesRes = await axios.get('http://localhost:8000/api/facilities/');
+        const facilitiesData = Array.isArray(facilitiesRes.data)
+          ? facilitiesRes.data
+          : facilitiesRes.data.results || [];
         setFacilities(facilitiesData);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -38,6 +39,21 @@ const PatientList = () => {
     };
     fetchData();
   }, [searchTerm]);
+
+  // Handle fetching the next or previous page
+  const handlePageChange = async (url) => {
+    if (!url) return; // Do nothing if the URL is null
+
+    try {
+      const res = await axios.get(url);
+      const patientsData = Array.isArray(res.data.results) ? res.data.results : [];
+      setPatients(patientsData);
+      setNextPageUrl(res.data.next || null);
+      setPrevPageUrl(res.data.previous || null);
+    } catch (error) {
+      console.error('Error fetching paginated data:', error);
+    }
+  };
 
   const handleDelete = async (id) => {
     try {
@@ -61,9 +77,7 @@ const PatientList = () => {
         type="text"
         placeholder="Search patients..."
         value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-        }}
+        onChange={(e) => setSearchTerm(e.target.value)}
       />
       <Link to="/patients/add" className="add-button">
         Add New Patient
@@ -99,6 +113,22 @@ const PatientList = () => {
           ))}
         </tbody>
       </table>
+
+      {/* Pagination Controls */}
+      <div className="pagination">
+        <button
+          onClick={() => handlePageChange(prevPageUrl)}
+          disabled={!prevPageUrl}
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => handlePageChange(nextPageUrl)}
+          disabled={!nextPageUrl}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };

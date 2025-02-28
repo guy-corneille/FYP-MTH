@@ -2,87 +2,51 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
-const AssessmentList = () => {
-  const [assessments, setAssessments] = useState([]);
+const AuditList = () => {
+  const [audits, setAudits] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [patients, setPatients] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch assessments
-        const assessmentsRes = await axios.get('http://localhost:8000/api/assessments/', {
+        const res = await axios.get('http://localhost:8000/api/audits/', {
           params: { search: searchTerm },
         });
-
-        // Fetch patients
-        const patientsRes = await axios.get('http://localhost:8000/api/patients/');
-
-        // Ensure patients is an array
-        const patientsData = Array.isArray(patientsRes.data)
-          ? patientsRes.data
-          : patientsRes.data.results || [];
-
-        // Update state
-        setAssessments(assessmentsRes.data);
-        setPatients(patientsData);
+        setAudits(res.data.results); // Ensure you're using `results` for paginated responses
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching audits:', error);
       }
     };
     fetchData();
   }, [searchTerm]);
 
-  const getPatientIdentifier = (patientId) => {
-    const patient = patients.find((p) => p.id === patientId);
-    return patient ? patient.identifier : 'Unknown Patient';
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:8000/api/assessments/${id}/`);
-      setAssessments((prevAssessments) => prevAssessments.filter((a) => a.id !== id));
-    } catch (error) {
-      console.error('Delete failed:', error);
-    }
-  };
-
   return (
-    <div className="assessment-list">
-      <h2>Patient Assessments</h2>
+    <div>
+      <h2>Audits</h2>
       <input
         type="text"
-        placeholder="Search assessments..."
+        placeholder="Search audits..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <Link to="/assessments/add" className="add-button">
-        New Assessment
-      </Link>
+      <Link to="/audits/new">Add New Audit</Link>
       <table>
         <thead>
           <tr>
-            <th>Patient</th>
+            <th>Facility</th>
             <th>Date</th>
-            <th>Score</th>
-            <th>Notes</th>
+            <th>Compliance Score</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {assessments.map((assessment) => (
-            <tr key={assessment.id}>
-              <td>{getPatientIdentifier(assessment.patient)}</td>
-              <td>{new Date(assessment.date).toLocaleDateString()}</td>
-              <td>{assessment.score}</td>
-              <td>{assessment.notes}</td>
+          {audits.map((audit) => (
+            <tr key={audit.id}>
+              <td>{audit.facility?.name || 'Unknown Facility'}</td> {/* Handle null values */}
+              <td>{new Date(audit.date).toLocaleDateString()}</td>
+              <td>{audit.compliance_score}%</td>
               <td>
-                <Link to={`/assessments/edit/${assessment.id}`} className="edit-link">
-                  Edit
-                </Link>
-                <button onClick={() => handleDelete(assessment.id)} className="delete-button">
-                  Delete
-                </button>
+                <Link to={`/audits/edit/${audit.id}`}>Edit</Link>
               </td>
             </tr>
           ))}
@@ -92,4 +56,4 @@ const AssessmentList = () => {
   );
 };
 
-export default AssessmentList;
+export default AuditList;

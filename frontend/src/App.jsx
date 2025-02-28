@@ -14,6 +14,8 @@ import PatientForm from './components/PatientForm';
 import AssessmentList from './components/AssessmentList';
 import AssessmentForm from './components/AssessmentForm';
 import EvaluationTemplateForm from './components/EvaluationTemplateForm';
+import AuditList from './components/AuditList';
+import AddAuditForm from './components/AddAuditForm';
 
 function App() {
     return (
@@ -52,6 +54,10 @@ function App() {
 
                         {/* Evaluation Templates */}
                         <Route path="/templates" element={<EvaluationTemplateForm />} />
+                        
+                        {/* Audits Templates */}
+                        <Route path="/audits" element={<AuditList />} />
+                        <Route path="/audits/add" element={<AddAuditForm />} />
 
                         {/* Fallback Route */}
                         <Route path="*" element={<h1>404 Not Found</h1>} />

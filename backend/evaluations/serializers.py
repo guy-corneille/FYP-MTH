@@ -28,6 +28,8 @@ class AssessmentSerializer(serializers.ModelSerializer):
 
 class AuditSerializer(serializers.ModelSerializer):
     compliance_score = serializers.IntegerField(min_value=0, max_value=100)
+    facility = FacilitySerializer(read_only=True)  # Nested serialization
+
 
     class Meta:
         model = Audit
