@@ -60,6 +60,10 @@ MIDDLEWARE = [
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 ROOT_URLCONF = 'mhq.urls'
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
+APPEND_SLASH = True
 
 TEMPLATES = [
     {

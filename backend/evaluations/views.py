@@ -48,7 +48,7 @@ class AssessmentViewSet(viewsets.ModelViewSet):
 
 class AuditViewSet(viewsets.ModelViewSet):
 
-    queryset = Audit.objects.all()
+    queryset = Audit.objects.all().order_by('-date')  # Order by most recent audits
     serializer_class = AuditSerializer
     pagination_class = StandardResultsSetPagination
 
